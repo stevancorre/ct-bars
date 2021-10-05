@@ -1,4 +1,4 @@
-#include "ctbar.h"
+#include "ctbars.h"
 
 // Temporary char map for the bar
 // TODO: use a better method to actually store the characters

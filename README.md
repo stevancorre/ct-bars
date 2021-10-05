@@ -29,8 +29,6 @@ struct CTBar bar = CTBar_Init(x, y, w, h, min, max);
 /// Using a rectangle
 // Currently, x, y and height doesn't affect the render
 struct CTBar_Rect = {
-ffect the render
-struct CTBar_Rect = {
     .x = xpos,
     .y = ypos,
     .w = width,

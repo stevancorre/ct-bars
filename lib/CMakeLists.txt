@@ -8,3 +8,4 @@ set(MODULE_FILES
 add_library(CTBar STATIC ${MODULE_FILES})
 
 target_include_directories(CTBar PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_link_libraries(CTBar m)

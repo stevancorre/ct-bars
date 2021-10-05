@@ -1,5 +1,8 @@
 #include "ctbar.h"
 
+// Temporary char map for the bar
+// TODO: use a better method to actually store the characters
+// TODO: make an option out of this
 const char *CTBAR_MAP_V[101] = {
     [0] = " ",
     [12] = "\u258F",
@@ -11,49 +14,35 @@ const char *CTBAR_MAP_V[101] = {
     [87] = "\u2589",
     [100] = "\u2588"};
 
+/**
+ * @brief Clamp a value between 0 and 1
+ * 
+ * @param v The target the value
+ * @return Value, clamped between 0 and 1
+ */
 float clamp01(float v)
 {
     return v < 0 ? 0 : v > 1 ? 1
                              : v;
 }
 
-int plot(float v)
-{
-    const float stepSize = 1 / 8.0f;
-    return (int)(ceilf(v / stepSize) * stepSize * 100 * -1);
-}
-
+/**
+ * TODO: implement custom step size
+ *
+ * @brief Get the last character of the bar
+ * 
+ * @param v Remainder value
+ * @return The last character (unicode) that the bar needs to display
+ */
 const char *getLastFill(float v)
 {
-    int pi = plot(v);
-    return (const char *)CTBAR_MAP_V[pi];
+    // Step v
+    const float stepSize = 1 / 8.0f;
+    int i = (int)(ceilf(v / stepSize) * stepSize * 100 * -1);
+
+    // Return corresponding character in the map
+    return (const char *)CTBAR_MAP_V[i];
 }
-
-/*
--- HORIZONTAL
-      0.0%  0160  0
-     12.5%  258F  1
-     25.0%  258E  2
-     37.5%  258D  3
-     50.0%  258C  4
-     62.5%  258B  5
-     75.0%  258A  6
-     87.5%  2589  7
-    100.0%  2588  8
-
--- VERTICAL
-
-      0.0%  0160
-     12.5%  258F
-     25.0%  258E
-     37.5%  258D
-     50.0%  258C
-     62.5%  258B
-     75.0%  258A
-     87.5%  2589
-    100.0%  2588
-
- */
 
 struct CTBar CTBar_InitR(struct CTBar_Rect rect, float min, float max)
 {
@@ -61,7 +50,7 @@ struct CTBar CTBar_InitR(struct CTBar_Rect rect, float min, float max)
         .rect = rect,
         .min = min,
         .max = max,
-        .value = 0};
+        .value = min};
 
     return bar;
 }
@@ -80,30 +69,44 @@ struct CTBar CTBar_Init(unsigned short x, unsigned short y, unsigned char w, uns
 
 void CTBar_Render(struct CTBar bar, int flush)
 {
+    // Calculate the percentage of the bar
     float percentage = clamp01((bar.value - bar.min) / (bar.max - bar.min));
     float fill = bar.rect.w * percentage;
 
-    int fill_count = (int)fill;
-    float remainder = fill_count - fill;
+    // Calculate the count of characters we need to display, and the remainer
+    // Then, get the last character of the bar
+    int fillCount = (int)fill;
+    float remainder = fillCount - fill;
 
     const char *lastFill = getLastFill(remainder);
 
+    // Rewrite on existing bar
     printf("\r");
-    for (int i = 0; i < fill_count; i++)
+
+    // TODO: avoid using loops
+
+    // Write fill
+    for (int i = 0; i < fillCount; i++)
     {
         printf("%s", CTBAR_MAP_V[100]);
     }
-
     printf("%s", lastFill);
 
-    for (int i = 0; i < bar.rect.w - fill_count; i++)
+    // Write empty
+    for (int i = 0; i < bar.rect.w - fillCount; i++)
     {
         printf("%s", CTBAR_MAP_V[0]);
     }
 
+    // Display the percentage
+    // TODO: make an option ouf of this
     printf("%.f%%  ", percentage * 100);
 
-    if(flush) {
+    // Flush the stdout if we need to
+    // This has to be used if we use like sleep functions
+    // TODO: make so the user can decide what output stream he wants
+    if (flush)
+    {
         fflush(stdout);
     }
 }
